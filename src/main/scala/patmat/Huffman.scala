@@ -195,16 +195,16 @@ object Huffman {
    */
     def decode(tree: CodeTree, bits: List[Bit]): List[Char] = {
       @tailrec
-      def traverseTree(tree: CodeTree, bit: Bit): Char = {
+      def decodeBit(tree: CodeTree, bit: Bit): Char = {
         tree match {
           case leaf: Leaf => leaf.char
           case fork: Fork => bit match {
-            case 1 => traverseTree(fork.right, bit)
-            case 0 => traverseTree(fork.left, bit)
+            case 1 => decodeBit(fork.right, bit)
+            case 0 => decodeBit(fork.left, bit)
           }
         }
       }
-      bits.foldLeft(List[Char]()) { (acc: List[Char], bit: Bit) => traverseTree(tree, bit) :: acc }
+      bits.foldLeft(List[Char]()) { (acc: List[Char], bit: Bit) => decodeBit(tree, bit) :: acc }
     }
   
   /**
