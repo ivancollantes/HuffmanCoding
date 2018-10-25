@@ -101,17 +101,29 @@ object Huffman {
    * of a leaf is the frequency of the character.
    */
     def makeOrderedLeafList(freqs: List[(Char, Int)]): List[Leaf] = {
+      @tailrec
       def convertToLeaf(pairs: List[(Char, Int)], acc: List[Leaf]): List[Leaf] = {
         if(pairs.isEmpty) acc
-        else convertToLeaf(pairs.tail, new Leaf(pairs.head._1, pairs.head._2) :: acc)
+        else convertToLeaf(pairs.tail, Leaf(pairs.head._1, pairs.head._2) :: acc)
       }
       convertToLeaf(freqs, List()).sortWith(_.weight < _.weight)
+//      def sortAndConvert(pairs: List[(Char, Int)], acc: List[Leaf]): List[Leaf] = {
+//        if(pairs.isEmpty) acc
+//        else if(acc.isEmpty) sortAndConvert(pairs.tail, Leaf(pairs.head._1, pairs.head._2) :: acc)
+//        else {
+//          val pairsHeadWeight: Int = pairs.head._2
+//          val accHeadWeight: Int = acc.head.weight
+//          if (pairsHeadWeight <= accHeadWeight) sortAndConvert(pairs.tail, Leaf(pairs.head._1, pairsHeadWeight) :: acc)
+//          else acc.head :: sortAndConvert(pairs.tail, Leaf(pairs.head._1, pairsHeadWeight) :: acc.tail)
+//        }
+//      }
+//      sortAndConvert(freqs, List())
     }
   
   /**
    * Checks whether the list `trees` contains only one single code tree.
    */
-    def singleton(trees: List[CodeTree]): Boolean = ???
+    def singleton(trees: List[CodeTree]): Boolean = trees.length == 1
   
   /**
    * The parameter `trees` of this function is a list of code trees ordered
@@ -125,7 +137,22 @@ object Huffman {
    * If `trees` is a list of less than two elements, that list should be returned
    * unchanged.
    */
-    def combine(trees: List[CodeTree]): List[CodeTree] = ???
+    def combine(trees: List[CodeTree]): List[CodeTree] = {
+      if(trees.length < 2) trees
+      else {
+        val newFork: CodeTree = makeCodeTree(trees.head, trees.tail.head)
+        val remainingTree: List[CodeTree] = trees.tail.tail
+        val newTree: List[CodeTree] = newFork :: remainingTree
+        newTree.sortWith((left: CodeTree, right: CodeTree) => {
+          (left, right) match {
+            case (left: Fork, right: Fork) => left.weight < right.weight
+            case (left: Leaf, right: Leaf) => left.weight < right.weight
+            case (left: Fork, right: Leaf) => left.weight < right.weight
+            case (left: Leaf, right: Fork) => left.weight < right.weight
+          }
+        })
+      }
+    }
   
   /**
    * This function will be called in the following way:
@@ -144,15 +171,18 @@ object Huffman {
    *    the example invocation. Also define the return type of the `until` function.
    *  - try to find sensible parameter names for `xxx`, `yyy` and `zzz`.
    */
-    def until(xxx: ???, yyy: ???)(zzz: ???): ??? = ???
-  
+    def until(limit: List[CodeTree] => Boolean, reductor: List[CodeTree] => List[CodeTree])(list: List[CodeTree]): CodeTree = {
+      if(limit(list)) list.head
+      else until(limit, reductor)(reductor(list))
+    }
+
   /**
    * This function creates a code tree which is optimal to encode the text `chars`.
    *
    * The parameter `chars` is an arbitrary text. This function extracts the character
    * frequencies from that text and creates a code tree based on them.
    */
-    def createCodeTree(chars: List[Char]): CodeTree = ???
+    def createCodeTree(chars: List[Char]): CodeTree = until(singleton, combine)(makeOrderedLeafList(times(chars)))
   
 
   // Part 3: Decoding
@@ -163,7 +193,19 @@ object Huffman {
    * This function decodes the bit sequence `bits` using the code tree `tree` and returns
    * the resulting list of characters.
    */
-    def decode(tree: CodeTree, bits: List[Bit]): List[Char] = ???
+    def decode(tree: CodeTree, bits: List[Bit]): List[Char] = {
+      @tailrec
+      def traverseTree(tree: CodeTree, bit: Bit): Char = {
+        tree match {
+          case leaf: Leaf => leaf.char
+          case fork: Fork => bit match {
+            case 1 => traverseTree(fork.right, bit)
+            case 0 => traverseTree(fork.left, bit)
+          }
+        }
+      }
+      bits.foldLeft(List[Char]()) { (acc: List[Char], bit: Bit) => traverseTree(tree, bit) :: acc }
+    }
   
   /**
    * A Huffman coding tree for the French language.
@@ -181,7 +223,7 @@ object Huffman {
   /**
    * Write a function that returns the decoded secret
    */
-    def decodedSecret: List[Char] = ???
+    def decodedSecret: List[Char] = decode(frenchCode, secret)
   
 
   // Part 4a: Encoding using Huffman tree
