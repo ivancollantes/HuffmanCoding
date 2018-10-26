@@ -3,8 +3,6 @@ package patmat
 import common._
 
 import scala.annotation.tailrec
-import scala.collection.mutable
-import scala.collection.immutable
 
 /**
  * Assignment 4: Huffman coding
@@ -293,7 +291,7 @@ object Huffman {
       }
       text.foldLeft(List[Bit]()) {
         (acc: List[Bit], char: Char) =>
-          acc ::: encodeChar(tree, char.toLower, List[Bit]())
+          acc ::: encodeChar(tree, char, List[Bit]())
       }
     }
   
@@ -364,3 +362,6 @@ object Huffman {
     // curried version (type is CodeTree => List[Char] => List[Bit])
     def quickEncode(tree: CodeTree)(text: List[Char]): List[Bit] = text.flatMap(codeBits(convert(tree)))
   }
+
+//List('l', 'i', 't', 'e', 'r', 'a', 't', 'u', 'r', 'e', ' ', 'f', 'r', 'o', 'm', ' ', '4', '5', ' ', 'b', 'c', ',', ' ', 'm', 'a', 'k', 'i', 'n', 'g', ' ', 'i', 't', ' ', 'o', 'v', 'e', 'r', ' ', '2', '0', '0', '0', ' ', 'y', 'e', 'a', 'r', 's', ' ', 'o', 'l', 'd', '.') did not equal
+//List('l', 'i', 't', 'e', 'r', 'a', 't', 'u', 'r', 'e', ' ', 'f', 'r', 'o', 'm', ' ', '4', '5', ' ', 'B', 'C', ',', ' ', 'm', 'a', 'k', 'i', 'n', 'g', ' ', 'i', 't', ' ', 'o', 'v', 'e', 'r', ' ', '2', '0', '0', '0', ' ', 'y', 'e', 'a', 'r', 's', ' ', 'o', 'l', 'd', '.')
