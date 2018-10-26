@@ -212,7 +212,29 @@ object Huffman {
    * Generated from the data given at
    *   http://fr.wikipedia.org/wiki/Fr%C3%A9quence_d%27apparition_des_lettres_en_fran%C3%A7ais
    */
-  val frenchCode: CodeTree = Fork(Fork(Fork(Leaf('s',121895),Fork(Leaf('d',56269),Fork(Fork(Fork(Leaf('x',5928),Leaf('j',8351),List('x','j'),14279),Leaf('f',16351),List('x','j','f'),30630),Fork(Fork(Fork(Fork(Leaf('z',2093),Fork(Leaf('k',745),Leaf('w',1747),List('k','w'),2492),List('z','k','w'),4585),Leaf('y',4725),List('z','k','w','y'),9310),Leaf('h',11298),List('z','k','w','y','h'),20608),Leaf('q',20889),List('z','k','w','y','h','q'),41497),List('x','j','f','z','k','w','y','h','q'),72127),List('d','x','j','f','z','k','w','y','h','q'),128396),List('s','d','x','j','f','z','k','w','y','h','q'),250291),Fork(Fork(Leaf('o',82762),Leaf('l',83668),List('o','l'),166430),Fork(Fork(Leaf('m',45521),Leaf('p',46335),List('m','p'),91856),Leaf('u',96785),List('m','p','u'),188641),List('o','l','m','p','u'),355071),List('s','d','x','j','f','z','k','w','y','h','q','o','l','m','p','u'),605362),Fork(Fork(Fork(Leaf('r',100500),Fork(Leaf('c',50003),Fork(Leaf('v',24975),Fork(Leaf('g',13288),Leaf('b',13822),List('g','b'),27110),List('v','g','b'),52085),List('c','v','g','b'),102088),List('r','c','v','g','b'),202588),Fork(Leaf('n',108812),Leaf('t',111103),List('n','t'),219915),List('r','c','v','g','b','n','t'),422503),Fork(Leaf('e',225947),Fork(Leaf('i',115465),Leaf('a',117110),List('i','a'),232575),List('e','i','a'),458522),List('r','c','v','g','b','n','t','e','i','a'),881025),List('s','d','x','j','f','z','k','w','y','h','q','o','l','m','p','u','r','c','v','g','b','n','t','e','i','a'),1486387)
+    val rrrl: CodeTree = Leaf('i',115465) // i: 1110
+    val rrrr: CodeTree = Leaf('a',117110) // a: 1111
+    val rrr: CodeTree = Fork(rrrl,rrrr,List('i','a'),232575)
+    val rrl: CodeTree = Leaf('e',225947) // e: 110
+    val rr: CodeTree = Fork(rrl, rrr, List('e','i','a'),458522)
+    val rlrr: CodeTree = Leaf('t',111103) // t: 1011
+    val rlrl: CodeTree = Leaf('n',108812) // n: 1010
+    val rlr: CodeTree = Fork(rlrl,rlrr,List('n','t'),219915)
+    val rllrrrr: CodeTree = Leaf('b',13822) // b: 1001111
+    val rllrrrl: CodeTree = Leaf('g',13288) // g: 1001110
+    val rllrrr: CodeTree = Fork(rllrrrl,rllrrrr,List('g','b'),27110)
+    val rllrrl: CodeTree = Leaf('v',24975) // v: 100110
+    val rllrr: CodeTree = Fork(rllrrl, rllrrr, List('v','g','b'),52085)
+    val rllrl: CodeTree = Leaf('c',50003) // c: 10010
+    val rllr: CodeTree = Fork(rllrl, rllrr, List('c','v','g','b'),102088)
+    val rlll: CodeTree = Leaf('r',100500) // r: 1000
+    val rll: CodeTree = Fork(rlll, rllr, List('r','c','v','g','b'),202588)
+    val rl: CodeTree = Fork(rll, rlr, List('r','c','v','g','b','n','t'),422503)
+    val r: CodeTree = Fork(rl, rr, List('r','c','v','g','b','n','t','e','i','a'),881025)
+
+  val l: CodeTree = Fork(Fork(Leaf('s',121895),Fork(Leaf('d',56269),Fork(Fork(Fork(Leaf('x',5928),Leaf('j',8351),List('x','j'),14279),Leaf('f',16351),List('x','j','f'),30630), Fork(Fork(Fork(Fork(Leaf('z',2093),Fork(Leaf('k',745),Leaf('w',1747),List('k','w'),2492),List('z','k','w'),4585),Leaf('y',4725),List('z','k','w','y'),9310),Leaf('h',11298),List('z','k','w','y','h'),20608),Leaf('q',20889),List('z','k','w','y','h','q'),41497),List('x','j','f','z','k','w','y','h','q'),72127),List('d','x','j','f','z','k','w','y','h','q'),128396),List('s','d','x','j','f','z','k','w','y','h','q'),250291), Fork(Fork(Leaf('o',82762),Leaf('l',83668),List('o','l'),166430),Fork(Fork(Leaf('m',45521),Leaf('p',46335),List('m','p'),91856),Leaf('u',96785),List('m','p','u'),188641),List('o','l','m','p','u'),355071),List('s','d','x','j','f','z','k','w','y','h','q','o','l','m','p','u'),605362)
+
+  val frenchCode: CodeTree = Fork(l, r, List('s','d','x','j','f','z','k','w','y','h','q','o','l','m','p','u','r','c','v','g','b','n','t','e','i','a'),1486387)
 
   /**
    * What does the secret message say? Can you decode it?
@@ -233,22 +255,26 @@ object Huffman {
    * into a sequence of bits.
    */
     def encode(tree: CodeTree)(text: List[Char]): List[Bit] = {
+      /* I suppose there are no special characters, only a-zA-Z */
       def treeContainsChar(tree: CodeTree, char: Char): Boolean = {
         tree match {
           case leaf: Leaf => leaf.char == char
-          case fork: Fork => fork.chars.contains(char)
+          case branch: Fork => branch.chars.contains(char)
         }
       }
       def encodeChar(tree: CodeTree, char: Char, acc: List[Bit]): List[Bit] = {
-        (tree match {
+        tree match {
           case leaf: Leaf => acc
-          case fork: Fork => {
-            if(treeContainsChar(fork.left, char)) encodeChar(fork.left, char, 0 :: acc)
-            else encodeChar(fork.right, char, 1 :: acc)
+          case branch: Fork => {
+            if(treeContainsChar(branch.left, char)) encodeChar(branch.left, char, acc ::: List(0))
+            else encodeChar(branch.right, char, acc ::: List(1))
           }
-        }).reverse
+        }
       }
-      text.foldLeft(List[Bit]()) { (acc: List[Bit], char: Char) => encodeChar(tree, char, List[Bit]()) ::: acc}
+      text.foldLeft(List[Bit]()) {
+        (acc: List[Bit], char: Char) =>
+          acc ::: encodeChar(tree, char.toLower, List[Bit]())
+      }
     }
   
   // Part 4b: Encoding using code table
@@ -270,23 +296,45 @@ object Huffman {
    * sub-trees, think of how to build the code table for the entire tree.
    */
     def convert(tree: CodeTree): CodeTable = {
-      def inner(tree: CodeTree, acc: CodeTable): CodeTable = {
+      def branchContainsChar(tree: CodeTree, char: Char): Boolean = {
         tree match {
-          case leaf: Leaf => acc
-          case fork: Fork => {
-            val leftCodeTable: CodeTable = fork.left match {
-              case leaf: Leaf => List((leaf.char, List(0)))
-              case fork: Fork => inner(fork, acc)
-            }
-            val rightCodeTable: CodeTable = fork.right match {
-              case leaf: Leaf => List((leaf.char, List(1)))
-              case fork: Fork => inner(fork, acc)
-            }
-            mergeCodeTables(leftCodeTable, rightCodeTable)
-          }
+          case leaf: Leaf => leaf.char == char
+          case fork: Fork => fork.chars.contains(char)
         }
       }
-      inner(tree, List())
+      def encodeChar(tree: CodeTree, char: Char, acc: CodeTable): CodeTable = {
+        (tree match {
+          case leaf: Leaf => acc
+          case fork: Fork => {
+            if(branchContainsChar(fork.left, char)) encodeChar(fork.left, char, mergeCodeTables(List((char, List(0))), acc))
+            else encodeChar(fork.right, char, mergeCodeTables(List((char, List(1))), acc))
+          }
+        }).reverse
+      }
+      tree match {
+        case leaf: Leaf => List()
+        case fork: Fork => fork.chars.foldLeft(List[(Char, List[Bit])]()) {
+          (acc: CodeTable, char: Char) => mergeCodeTables(encodeChar(fork, char, List[(Char, List[Bit])]()), acc)
+        }
+      }
+
+//      def inner(tree: CodeTree, acc: CodeTable): CodeTable = {
+//        tree match {
+//          case leaf: Leaf => acc
+//          case fork: Fork => {
+//            val leftCodeTable: CodeTable = fork.left match {
+//              case leaf: Leaf => List((leaf.char, List(0)))
+//              case fork: Fork => inner(fork, acc)
+//            }
+//            val rightCodeTable: CodeTable = fork.right match {
+//              case leaf: Leaf => List((leaf.char, List(1)))
+//              case fork: Fork => inner(fork, acc)
+//            }
+//            mergeCodeTables(leftCodeTable, rightCodeTable)
+//          }
+//        }
+//      }
+//      inner(tree, List())
     }
   
   /**
