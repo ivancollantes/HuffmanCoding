@@ -107,17 +107,6 @@ object Huffman {
         else convertToLeaf(pairs.tail, Leaf(pairs.head._1, pairs.head._2) :: acc)
       }
       convertToLeaf(freqs, List()).sortWith(_.weight < _.weight)
-//      def sortAndConvert(pairs: List[(Char, Int)], acc: List[Leaf]): List[Leaf] = {
-//        if(pairs.isEmpty) acc
-//        else if(acc.isEmpty) sortAndConvert(pairs.tail, Leaf(pairs.head._1, pairs.head._2) :: acc)
-//        else {
-//          val pairsHeadWeight: Int = pairs.head._2
-//          val accHeadWeight: Int = acc.head.weight
-//          if (pairsHeadWeight <= accHeadWeight) sortAndConvert(pairs.tail, Leaf(pairs.head._1, pairsHeadWeight) :: acc)
-//          else acc.head :: sortAndConvert(pairs.tail, Leaf(pairs.head._1, pairsHeadWeight) :: acc.tail)
-//        }
-//      }
-//      sortAndConvert(freqs, List())
     }
   
   /**
@@ -348,24 +337,6 @@ object Huffman {
           (acc: CodeTable, char: Char) => mergeCodeTables(encodeChar(fork, char, List[(Char, List[Bit])]()), acc)
         }
       }
-
-//      def inner(tree: CodeTree, acc: CodeTable): CodeTable = {
-//        tree match {
-//          case leaf: Leaf => acc
-//          case fork: Fork => {
-//            val leftCodeTable: CodeTable = fork.left match {
-//              case leaf: Leaf => List((leaf.char, List(0)))
-//              case fork: Fork => inner(fork, acc)
-//            }
-//            val rightCodeTable: CodeTable = fork.right match {
-//              case leaf: Leaf => List((leaf.char, List(1)))
-//              case fork: Fork => inner(fork, acc)
-//            }
-//            mergeCodeTables(leftCodeTable, rightCodeTable)
-//          }
-//        }
-//      }
-//      inner(tree, List())
     }
   
   /**
@@ -390,5 +361,6 @@ object Huffman {
    * To speed up the encoding process, it first converts the code tree to a code table
    * and then uses it to perform the actual encoding.
    */
-    def quickEncode(tree: CodeTree)(text: List[Char]): List[Bit] = ???
+    // curried version (type is CodeTree => List[Char] => List[Bit])
+    def quickEncode(tree: CodeTree)(text: List[Char]): List[Bit] = text.flatMap(codeBits(convert(tree)))
   }
