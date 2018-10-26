@@ -60,4 +60,21 @@ class HuffmanSuite extends FunSuite {
     }
   }
 
+
+  test("mergeCodeTables returns a merged CodeTable") {
+    val codeTableLeft = List(('b', List(0)))
+    val codeTableRight = List(('c', List(0)), ('d', List(1)))
+    val expectedMergedCodeTable = List(('b', List(0)), ('c', List(0)), ('d', List(1)))
+    val expectedMergedCodeTableDoubleB = List(('b', List(0, 0)), ('c', List(0)), ('d', List(1)))
+    assert(mergeCodeTables(codeTableLeft, codeTableRight) === expectedMergedCodeTable)
+    assert(mergeCodeTables(codeTableLeft, expectedMergedCodeTable) === expectedMergedCodeTableDoubleB)
+  }
+
+  test("") {
+    new TestTrees {
+      val expectedCodeTable: CodeTable = List(('a', List(0, 0)), ('b', List(0, 1)), ('d', List(1)))
+      assert(convert(t2) === expectedCodeTable)
+    }
+  }
+
 }
