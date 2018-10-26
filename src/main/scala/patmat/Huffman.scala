@@ -195,16 +195,20 @@ object Huffman {
    */
     def decode(tree: CodeTree, bits: List[Bit]): List[Char] = {
       @tailrec
-      def decodeBit(tree: CodeTree, bit: Bit): Char = {
-        tree match {
-          case leaf: Leaf => leaf.char
-          case fork: Fork => bit match {
-            case 1 => decodeBit(fork.right, bit)
-            case 0 => decodeBit(fork.left, bit)
+      def decodeBit(subTree: CodeTree, bits: List[Bit], acc: List[Char]): List[Char] = {
+        if(bits.isEmpty) acc
+        else {
+          subTree match {
+            case leaf: Leaf => decodeBit(tree, bits, acc ::: List(leaf.char))
+            case fork: Fork => bits.head match {
+              case 0 => decodeBit(fork.left, bits.tail, acc)
+              case 1 => decodeBit(fork.right, bits.tail, acc)
+            }
           }
         }
       }
-      bits.foldLeft(List[Char]()) { (acc: List[Char], bit: Bit) => decodeBit(tree, bit) :: acc }
+      /* I add a dummy bit at the end of the bits list so that execution ends nicely */
+      decodeBit(tree, bits ::: List(0), List())
     }
   
   /**
@@ -232,10 +236,36 @@ object Huffman {
     val rl: CodeTree = Fork(rll, rlr, List('r','c','v','g','b','n','t'),422503)
     val r: CodeTree = Fork(rl, rr, List('r','c','v','g','b','n','t','e','i','a'),881025)
 
-  val l: CodeTree = Fork(Fork(Leaf('s',121895),Fork(Leaf('d',56269),Fork(Fork(Fork(Leaf('x',5928),Leaf('j',8351),List('x','j'),14279),Leaf('f',16351),List('x','j','f'),30630), Fork(Fork(Fork(Fork(Leaf('z',2093),Fork(Leaf('k',745),Leaf('w',1747),List('k','w'),2492),List('z','k','w'),4585),Leaf('y',4725),List('z','k','w','y'),9310),Leaf('h',11298),List('z','k','w','y','h'),20608),Leaf('q',20889),List('z','k','w','y','h','q'),41497),List('x','j','f','z','k','w','y','h','q'),72127),List('d','x','j','f','z','k','w','y','h','q'),128396),List('s','d','x','j','f','z','k','w','y','h','q'),250291), Fork(Fork(Leaf('o',82762),Leaf('l',83668),List('o','l'),166430),Fork(Fork(Leaf('m',45521),Leaf('p',46335),List('m','p'),91856),Leaf('u',96785),List('m','p','u'),188641),List('o','l','m','p','u'),355071),List('s','d','x','j','f','z','k','w','y','h','q','o','l','m','p','u'),605362)
+  val l: CodeTree =
+    Fork(
+      Fork(
+        Leaf('s',121895),
+        Fork(
+          Leaf('d',56269),
+          Fork(
+            Fork(
+              Fork(Leaf('x',5928),Leaf('j',8351),List('x','j'),14279),
+              Leaf('f',16351),List('x','j','f'),30630),
+            Fork(
+              Fork(
+                Fork(
+                  Fork(
+                    Leaf('z',2093),
+                    Fork(Leaf('k',745),Leaf('w',1747),List('k','w'),2492),List('z','k','w'),4585),
+                  Leaf('y',4725),List('z','k','w','y'),9310),
+                Leaf('h',11298),List('z','k','w','y','h'),20608),
+              Leaf('q',20889),List('z','k','w','y','h','q'),41497),List('x','j','f','z','k','w','y','h','q'),72127),List('d','x','j','f','z','k','w','y','h','q'),128396),List('s','d','x','j','f','z','k','w','y','h','q'),250291),
+      Fork(
+        Fork(
+          Leaf('o',82762),
+          Leaf('l',83668),List('o','l'),166430),
+        Fork(
+          Fork(
+            Leaf('m',45521),
+            Leaf('p',46335),List('m','p'),91856),
+          Leaf('u',96785),List('m','p','u'),188641),List('o','l','m','p','u'),355071),List('s','d','x','j','f','z','k','w','y','h','q','o','l','m','p','u'),605362)
 
   val frenchCode: CodeTree = Fork(l, r, List('s','d','x','j','f','z','k','w','y','h','q','o','l','m','p','u','r','c','v','g','b','n','t','e','i','a'),1486387)
-
   /**
    * What does the secret message say? Can you decode it?
    * For the decoding use the 'frenchCode' Huffman tree defined above.
@@ -259,15 +289,16 @@ object Huffman {
       def treeContainsChar(tree: CodeTree, char: Char): Boolean = {
         tree match {
           case leaf: Leaf => leaf.char == char
-          case branch: Fork => branch.chars.contains(char)
+          case fork: Fork => fork.chars.contains(char)
         }
       }
+      @tailrec
       def encodeChar(tree: CodeTree, char: Char, acc: List[Bit]): List[Bit] = {
         tree match {
           case leaf: Leaf => acc
-          case branch: Fork => {
-            if(treeContainsChar(branch.left, char)) encodeChar(branch.left, char, acc ::: List(0))
-            else encodeChar(branch.right, char, acc ::: List(1))
+          case fork: Fork => {
+            if(treeContainsChar(fork.left, char)) encodeChar(fork.left, char, acc ::: List(0))
+            else encodeChar(fork.right, char, acc ::: List(1))
           }
         }
       }

@@ -69,16 +69,13 @@ class HuffmanSuite extends FunSuite {
 //    assert(mergeCodeTables(codeTableLeft, codeTableRight) === expectedMergedCodeTable)
 //    assert(mergeCodeTables(codeTableLeft, expectedMergedCodeTable) === expectedMergedCodeTableDoubleB)
 //  }
-//
-//  test("") {
-//    new TestTrees {
-//      val expectedCodeTable: CodeTable = List(('a', List(0, 0)), ('b', List(0, 1)), ('d', List(1)))
-//      assert(convert(t2) === expectedCodeTable)
-//    }
-//  }
+
+  test("decode decodes secret and encode gets the original encoded secret") {
+    val decodedSecretString = decodedSecret.mkString
+    assert(encode(frenchCode)(string2Chars(decodedSecretString)) === secret)
+  }
 
   test("decode and encode work as expected") {
-//    val secretMessage: String = "We are going to do it"
     val secretMessage: String = "berria"
     val secretMessaheChars: List[Char] = string2Chars(secretMessage)
     val encoded: List[Bit] = encode(frenchCode)(secretMessaheChars)
@@ -87,4 +84,10 @@ class HuffmanSuite extends FunSuite {
     assert(decodedMessage === secretMessage)
   }
 
+//  test("") {
+//    new TestTrees {
+//      val expectedCodeTable: CodeTable = List(('a', List(0, 0)), ('b', List(0, 1)), ('d', List(1)))
+//      assert(convert(t2) === expectedCodeTable)
+//    }
+//  }
 }
